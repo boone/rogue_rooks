@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Castles Game
+# Gosu Game Jam 2
+# February 2022
+
+# Mike Boone
+# https://twitter.com/boonedocks
+# https://github.com/boone
+
 require "gosu"
 
 class CastlesGame < Gosu::Window
