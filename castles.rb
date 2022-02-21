@@ -1,26 +1,29 @@
 # frozen_string_literal: true
 
-# Castles Game
+# Rogue Rooks
+# Castles Theme
 # Gosu Game Jam 2
 # February 2022
 
 # Mike Boone
 # https://twitter.com/boonedocks
 # https://github.com/boone
+# https://boone42.itch.io
 
 require "gosu"
 
-class CastlesGame < Gosu::Window
+class RogueRooks < Gosu::Window
   def initialize
     super 800, 850
     
     self.caption = "Castles!"
     
     @board = Gosu::Image.new("images/4x4_board.png", tileable: true)
+    @target = Gosu::Image.new("images/target.png", tileable: true)
     # @npcs = []
     q1 = Queen.new(1, 15, 1)
-    #q2 = Queen.new(15, 15, -1)
-    @npcs = [q1] #, q2]
+    q2 = Queen.new(15, 10, -1)
+    @npcs = [q1, q2]
     @time_check = Time.now
     @song = Gosu::Song.new("sounds/song_test.wav")
     @song.volume = 0.15
@@ -32,10 +35,40 @@ class CastlesGame < Gosu::Window
     r3 = PlayerRook.new(7, 8)
     r4 = PlayerRook.new(8, 8)
     @player_rooks = [r1, r2, r3, r4]
+    
+    @target_x = nil; @target_y = nil
+    
+    @title_font = Gosu::Font.new(40, italic: true)
+    @about_font = Gosu::Font.new(20)
+    @show_about = true
+  end
+
+  def button_down(button_id)
+    if button_id == Gosu::MS_LEFT
+      @show_about = false
+    end
   end
   
   def update
-    if Time.now - @time_check > 0.75
+    if @show_about
+      @song.volume = 0.05
+      return
+    else
+      @song.volume = 0.15
+    end
+    
+    # place target
+    if mouse_x >= 0 && mouse_x <= width &&
+      mouse_y >= 50 && mouse_y <= height
+      
+      @target_x = (mouse_x / 50).floor * 50
+      @target_y = (mouse_y / 50).floor * 50
+    else
+      @target_x = nil
+      @target_y = nil
+    end
+    
+    if Time.now - @time_check > 2
       @npcs.each do |npc|
         npc.move_closer
 
@@ -59,6 +92,28 @@ class CastlesGame < Gosu::Window
   end
 
   def draw
+    @title_font.draw_text("Rogue Rooks", 5, 5, 100)
+
+    if @show_about
+      my_text = <<~EOF
+        Made for the Gosu Game Jam 2 in February 2022
+
+        By Mike Boone
+        https://twitter.com/boonedocks
+        https://github.com/boone
+        https://boone42.itch.io
+      EOF
+
+      @about_font.draw_text(my_text, 5, 55, 100)
+      @about_font.draw_text(Gosu::LICENSES, 5, 555, 100)
+      
+      return
+    end
+
+    if @target_x && @target_y
+      @target.draw(@target_x, @target_y, 3)
+    end
+    
     (0..8).each do |x|
       (0..8).each do |y|
         @board.draw(x * 100 - 1, y * 100 - 1 + 50, 0)
@@ -93,22 +148,11 @@ class Queen
     # if the square is occupied by another npc, skip this turn
     # take one step closer
     # find angle to center
-    #
-    # 22.5 - 67.5 - ne
-    # 67.5 - 112.5 - n
-    # 112.5 - 157.5 - nw
-    # 157.5 - 202.5 - w
-    # 202.5 - 247.5 - sw
-    # 247.5 - 292.5 - s
-    # 292.5 - 337.5 - se
-    # 337.5 - 22.5 - e
 
     diff_x = 7.5 - @x
     diff_y = 7.5 - @y
 
     angle = Math.atan2(diff_x, diff_y) / (Math::PI / 180.0)
-
-    puts [diff_x, diff_y, angle]
 
     move = if angle >= -22.5 && angle < 22.5
       { x: 0, y: 1 } # s
@@ -145,4 +189,4 @@ class PlayerRook
 end
 
 
-CastlesGame.new.show
+RogueRooks.new.show
