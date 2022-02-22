@@ -85,7 +85,7 @@ class RogueRooks < Gosu::Window
     end
     
     @projectiles.each do |projectile|
-      projectile.rot += 1
+      # projectile.rot += 1
       projectile.move_closer
     end
 
@@ -212,42 +212,54 @@ class Projectile
   attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot
   
   def initialize(target_x, target_y)
-    @target_x = target_x
-    @target_y = target_y
+    # +25 centers the target
+    @target_x = target_x + 25
+    @target_y = target_y + 25
     
-    @pixel_x = 7.5 * 50.0
-    @pixel_y = 7.5 * 50.0 + 50
-    @rot = 0
-    @image = Gosu::Image.new("images/fireball.png", tileable: true)
-    @velocity = 15 # pixels/second
-  end
-  
-  def move_closer
-    # need the diff angle between x axis and trajectory
-    # also need the hypotenuse length (can we get away with not square-rooting?)
+    @pixel_x = 7.5 * 50.0 + 25
+    @pixel_y = 7.5 * 50.0 + 50 + 25
+
     diff_x = @target_x - @pixel_x
     diff_y = @target_y - @pixel_y
 
-    angle = Math.atan2(diff_x, diff_y)
-    puts Numeric.radians_to_gosu(angle)
-    @rot = angle
+    @angle = Math.atan2(diff_y, diff_x)
 
-    x_sign = 1.0
-    y_sign = 1.0
+    @rot = @angle / (Math::PI / 180.0) + 180
+    @image = Gosu::Image.new("images/fireball.png", tileable: true)
+    @velocity = 50 # pixels/second
+  end
+  
+  def move_closer
+    if (@target_x - @pixel_x).abs < 1.0 &&
+      (@target_y - @pixel_y).abs < 1.0
+      return
+    end
+    # need the diff angle between x axis and trajectory
+    # also need the hypotenuse length (can we get away with not square-rooting?)
+    # puts [@target_x, @pixel_x, @target_y, @pixel_y].inspect
+    # diff_x = @target_x - @pixel_x
+    # diff_y = @target_y - @pixel_y
+    # 
+    # angle = Math.atan2(diff_y, diff_x)
+    # puts [diff_x, diff_y, angle / (Math::PI / 180.0)].inspect
+    # @rot = angle
 
-    x_sign = -1.0 if angle < -Math::PI / 2 || angle > Math::PI / 2
-    y_sign = -1.0 if angle < 0.0
+    # x_sign = 1.0
+    # y_sign = -1.0
+    # 
+    # x_sign = -1.0 if @angle < -Math::PI / 2 || @angle > Math::PI / 2
+    # y_sign = 1.0 if @angle < 0.0
     
-    hyp_squared = diff_x ** 2 + diff_y ** 2
+    #hyp_squared = diff_x ** 2 + diff_y ** 2
     
     distance = @velocity * 1 / 60.0 # TODO fix
-    new_hyp = Math.sqrt(hyp_squared) - distance
+    #new_hyp = Math.sqrt(hyp_squared) - distance
 
-    new_diff_x = new_hyp * Math.cos(angle)
-    new_diff_y = new_hyp * Math.sin(angle)
+    new_diff_x = distance * Math.cos(@angle)
+    new_diff_y = distance * Math.sin(@angle)
 
-    @pixel_x = @target_x + x_sign * new_diff_x
-    @pixel_y = @target_y + y_sign * new_diff_y
+    @pixel_x += new_diff_x
+    @pixel_y += new_diff_y
   end
 end
 
