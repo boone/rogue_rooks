@@ -16,7 +16,7 @@ class RogueRooks < Gosu::Window
   def initialize
     super 800, 850
     
-    self.caption = "Castles!"
+    self.caption = "Rogue Rooks"
     
     @board = Gosu::Image.new("images/4x4_board.png", tileable: true)
     @target = Gosu::Image.new("images/target.png", tileable: true)
@@ -84,9 +84,10 @@ class RogueRooks < Gosu::Window
       @target_y = nil
     end
     
-    @projectiles.each do |projectile|
+    @projectiles.each_with_index do |projectile, i|
       # projectile.rot += 1
       projectile.move_closer
+      @projectiles.delete_at(i) if projectile.done
     end
 
     if Time.now - @time_check > 2
@@ -209,7 +210,7 @@ class PlayerRook
 end
 
 class Projectile
-  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot
+  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot, :done
   
   def initialize(target_x, target_y)
     # +25 centers the target
@@ -226,12 +227,19 @@ class Projectile
 
     @rot = @angle / (Math::PI / 180.0) + 180
     @image = Gosu::Image.new("images/fireball.png", tileable: true)
-    @velocity = 50 # pixels/second
+    @velocity = 100 # pixels/second
+    
+    launch = Gosu::Sample.new("sounds/launch.wav")
+    launch.play
+    @crash = Gosu::Sample.new("sounds/crash.wav")
+    @done = false
   end
   
   def move_closer
     if (@target_x - @pixel_x).abs < 1.0 &&
       (@target_y - @pixel_y).abs < 1.0
+      @crash.play
+      @done = true
       return
     end
     # need the diff angle between x axis and trajectory
