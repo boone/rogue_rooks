@@ -39,13 +39,29 @@ class RogueRooks < Gosu::Window
     @target_x = nil; @target_y = nil
     
     @title_font = Gosu::Font.new(40, italic: true)
+    @score_font = Gosu::Font.new(30, bold: true)
     @about_font = Gosu::Font.new(20)
     @show_about = true
+    @projectiles = []
+    @shoot_delay = Time.now
   end
 
   def button_down(button_id)
     if button_id == Gosu::MS_LEFT
-      @show_about = false
+      if @show_about
+        @show_about = false
+      else
+        if @projectiles.count < 4
+          current_time = Time.now
+          if current_time - @shoot_delay > 1.0
+            @shoot_delay = current_time
+            #puts @shoot_delay
+            @projectiles << Projectile.new(@target_x, @target_y)
+          end
+        else
+          # play out of ammo sounds?
+        end
+      end
     end
   end
   
@@ -68,17 +84,16 @@ class RogueRooks < Gosu::Window
       @target_y = nil
     end
     
+    @projectiles.each do |projectile|
+      projectile.rot += 1
+      projectile.move_closer
+    end
+
     if Time.now - @time_check > 2
+      @score += 100
       @npcs.each do |npc|
         npc.move_closer
 
-        # npc.x += 1 * npc.dir
-        # npc.x = 0 if npc.x > 15
-        # npc.x = 15 if npc.x < 0
-        # npc.y += 1 * npc.dir
-        # npc.y = 0 if npc.y > 15
-        # npc.y = 15 if npc.y < 0
-        
         @player_rooks.each_with_index do |player_rook, i|
           if npc.x == player_rook.x && npc.y == player_rook.y
             # todo explosion graphic and sound
@@ -88,11 +103,12 @@ class RogueRooks < Gosu::Window
       end
       @time_check = Time.now
     end
-    # puts @song.volume
   end
 
   def draw
     @title_font.draw_text("Rogue Rooks", 5, 5, 100)
+    score_width = @score_font.text_width(@score)
+    @score_font.draw_text(@score, width - score_width - 5, 10, 100)
 
     if @show_about
       my_text = <<~EOF
@@ -112,6 +128,10 @@ class RogueRooks < Gosu::Window
 
     if @target_x && @target_y
       @target.draw(@target_x, @target_y, 3)
+    end
+    
+    @projectiles.each do |projectile|
+      projectile.image.draw_rot(projectile.pixel_x, projectile.pixel_y, 3, projectile.rot % 360)
     end
     
     (0..8).each do |x|
@@ -188,5 +208,47 @@ class PlayerRook
   end
 end
 
+class Projectile
+  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot
+  
+  def initialize(target_x, target_y)
+    @target_x = target_x
+    @target_y = target_y
+    
+    @pixel_x = 7.5 * 50.0
+    @pixel_y = 7.5 * 50.0 + 50
+    @rot = 0
+    @image = Gosu::Image.new("images/fireball.png", tileable: true)
+    @velocity = 15 # pixels/second
+  end
+  
+  def move_closer
+    # need the diff angle between x axis and trajectory
+    # also need the hypotenuse length (can we get away with not square-rooting?)
+    diff_x = @target_x - @pixel_x
+    diff_y = @target_y - @pixel_y
+
+    angle = Math.atan2(diff_x, diff_y)
+    puts Numeric.radians_to_gosu(angle)
+    @rot = angle
+
+    x_sign = 1.0
+    y_sign = 1.0
+
+    x_sign = -1.0 if angle < -Math::PI / 2 || angle > Math::PI / 2
+    y_sign = -1.0 if angle < 0.0
+    
+    hyp_squared = diff_x ** 2 + diff_y ** 2
+    
+    distance = @velocity * 1 / 60.0 # TODO fix
+    new_hyp = Math.sqrt(hyp_squared) - distance
+
+    new_diff_x = new_hyp * Math.cos(angle)
+    new_diff_y = new_hyp * Math.sin(angle)
+
+    @pixel_x = @target_x + x_sign * new_diff_x
+    @pixel_y = @target_y + y_sign * new_diff_y
+  end
+end
 
 RogueRooks.new.show
