@@ -24,8 +24,17 @@ class RogueRooks < Gosu::Window
     text: 100,
   }.freeze
 
+  INFO_BAR_HEIGHT = 50
+  GAME_WIDTH = 800
+  GAME_HEIGHT = 800
+
+  SQUARE_SIZE = 50
+
+  def self.grid_to_pixel(grid_x, grid_y)
+  end
+
   def initialize
-    super 800, 850
+    super GAME_WIDTH, GAME_HEIGHT + INFO_BAR_HEIGHT
 
     self.caption = TITLE
 
@@ -87,10 +96,10 @@ class RogueRooks < Gosu::Window
 
     # place target
     if mouse_x >= 0 && mouse_x <= width &&
-      mouse_y >= 50 && mouse_y <= height
+      mouse_y >= INFO_BAR_HEIGHT && mouse_y <= height
 
-      @target_x = (mouse_x / 50).floor * 50
-      @target_y = (mouse_y / 50).floor * 50
+      @target_x = (mouse_x / SQUARE_SIZE).floor * SQUARE_SIZE
+      @target_y = (mouse_y / SQUARE_SIZE).floor * SQUARE_SIZE
     else
       @target_x = nil
       @target_y = nil
@@ -150,25 +159,24 @@ class RogueRooks < Gosu::Window
 
     (0..8).each do |x|
       (0..8).each do |y|
-        @board.draw(x * 100 - 1, y * 100 - 1 + 50, Z_LEVEL[:board])
+        @board.draw(x * SQUARE_SIZE * 2 - 1,
+          y * SQUARE_SIZE * 2 - 1 + INFO_BAR_HEIGHT, Z_LEVEL[:board])
       end
     end
 
     @npcs.each do |npc|
-      npc.image.draw(npc.x * 50, npc.y * 50 + 50, Z_LEVEL[:npc])
+      npc.image.draw(npc.x * 50, npc.y * 50 + INFO_BAR_HEIGHT, Z_LEVEL[:npc])
     end
 
     @player_rooks.each do |player_rook|
-      player_rook.image.draw(player_rook.x * 50, player_rook.y * 50 + 50,
-        Z_LEVEL[:rook])
+      player_rook.image.draw(player_rook.x * 50,
+        player_rook.y * 50 + INFO_BAR_HEIGHT, Z_LEVEL[:rook])
     end
   end
 end
 
 class Queen
   attr_accessor :x, :y, :image, :vel_x, :vel_y
-
-  # needs: current position, goal,
 
   def initialize(x, y)
     @x = x
@@ -240,7 +248,7 @@ class Projectile
 
     @rot = @angle / (Math::PI / 180.0) + 180
     @image = Gosu::Image.new("images/fireball.png", tileable: true)
-    @velocity = 100 # pixels/second
+    @velocity = 100.0 # pixels/second
 
     launch = Gosu::Sample.new("sounds/launch.wav")
     launch.play
@@ -257,7 +265,6 @@ class Projectile
     end
 
     distance = @velocity * 1 / 60.0 # TODO fix
-    #new_hyp = Math.sqrt(hyp_squared) - distance
 
     new_diff_x = distance * Math.cos(@angle)
     new_diff_y = distance * Math.sin(@angle)
