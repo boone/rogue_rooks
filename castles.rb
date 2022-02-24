@@ -30,7 +30,27 @@ class RogueRooks < Gosu::Window
 
   SQUARE_SIZE = 50
 
+  # grid coordinates to top-left pixel
   def self.grid_to_pixel(grid_x, grid_y)
+    # TODO
+  end
+
+  def self.occupy_square(grid_x, grid_y)
+    #puts "occupying #{grid_x}, #{grid_y}"
+    @@occupied ||= {}
+
+    raise "Occupied! #{grid_x}, #{grid_y}" if @@occupied[[grid_x, grid_y]]
+
+    @@occupied[[grid_x, grid_y]] = true
+  end
+
+  def self.leave_square(grid_x, grid_y)
+    #puts "leaving #{grid_x}, #{grid_y}"
+    @@occupied[[grid_x, grid_y]] = false
+  end
+
+  def self.occupied_square?(grid_x, grid_y)
+    @@occupied && @@occupied[[grid_x, grid_y]] == true
   end
 
   def initialize
@@ -43,10 +63,19 @@ class RogueRooks < Gosu::Window
 
     @song = Gosu::Song.new("sounds/song_test.wav")
 
-    q1 = Queen.new(1, 15)
-    q2 = Queen.new(15, 10)
-    @npcs = [q1, q2]
-    @time_check = Time.now
+    @npcs = []
+
+    # q1 = Queen.new(1, 15)
+    # q2 = Queen.new(15, 10)
+    # @npcs = [q1, q2]
+
+    (0..1).each do |i|
+      @npcs << Queen.new(i, 0)
+      @npcs << Queen.new(i + 14, 15)
+      @npcs << Queen.new(15, i)
+      @npcs << Queen.new(0, i + 14)
+    end
+
     @song.volume = 0.15
     @song.play(true)
     @score = 0
@@ -72,11 +101,10 @@ class RogueRooks < Gosu::Window
       if @show_about
         @show_about = false
       else
-        if @projectiles.count < 4
+        if @projectiles.count < 6
           current_time = Time.now
-          if current_time - @shoot_delay > 1.0
+          if current_time - @shoot_delay > 0.2
             @shoot_delay = current_time
-            #puts @shoot_delay
             @projectiles << Projectile.new(@target_x, @target_y)
           end
         else
@@ -91,6 +119,7 @@ class RogueRooks < Gosu::Window
       @song.volume = 0.05
       return
     else
+      @time_check ||= Time.now
       @song.volume = 0.15
     end
 
@@ -107,11 +136,23 @@ class RogueRooks < Gosu::Window
 
     @projectiles.each_with_index do |projectile, i|
       projectile.move_closer
-      @projectiles.delete_at(i) if projectile.done
+
+      if projectile.done
+        @projectiles.delete_at(i)
+        @npcs.each_with_index do |npc, j|
+          square_target_x = projectile.target_x / SQUARE_SIZE
+          square_target_y = (projectile.target_y - INFO_BAR_HEIGHT) / SQUARE_SIZE
+
+          if npc.x == square_target_x && npc.y == square_target_y
+            RogueRooks.leave_square(npc.x, npc.y)
+            @npcs.delete_at(j)
+            @score += 100
+          end
+        end
+      end
     end
 
-    if Time.now - @time_check > 2
-      @score += 100
+    if Time.now - @time_check > 2.5
       @npcs.each do |npc|
         npc.move_closer
 
@@ -184,6 +225,7 @@ class Queen
     @image = Gosu::Image.new("images/queen.png", tileable: true)
     @vel_x = 0
     @vel_y = 0
+    RogueRooks.occupy_square(x, y)
   end
 
   def move_closer
@@ -214,8 +256,21 @@ class Queen
       { x: -1, y: 1 } # sw
     end
 
-    @x += move[:x]
-    @y += move[:y]
+    # only move if the square is open
+    orig_x = @x
+    orig_y = @y
+
+    new_x = @x + move[:x]
+    new_y = @y + move[:y]
+
+    unless RogueRooks.occupied_square?(new_x, new_y)
+      RogueRooks.leave_square(orig_x, orig_y)
+
+      @x = new_x
+      @y = new_y
+
+      RogueRooks.occupy_square(new_x, new_y)
+    end
   end
 end
 
@@ -231,7 +286,7 @@ class PlayerRook
 end
 
 class Projectile
-  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot, :done
+  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot, :done, :square
 
   def initialize(target_x, target_y)
     # +25 centers the target
@@ -248,7 +303,7 @@ class Projectile
 
     @rot = @angle / (Math::PI / 180.0) + 180
     @image = Gosu::Image.new("images/fireball.png", tileable: true)
-    @velocity = 100.0 # pixels/second
+    @velocity = 150.0 # pixels/second
 
     launch = Gosu::Sample.new("sounds/launch.wav")
     launch.play
