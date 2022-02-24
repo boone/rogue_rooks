@@ -11,6 +11,7 @@
 # https://boone42.itch.io
 
 require "gosu"
+require_relative "rook"
 require_relative "queen"
 require_relative "projectile"
 
@@ -82,10 +83,10 @@ class RogueRooks < Gosu::Window
     @song.play(true)
     @score = 0
 
-    r1 = PlayerRook.new(7, 7)
-    r2 = PlayerRook.new(8, 7)
-    r3 = PlayerRook.new(7, 8)
-    r4 = PlayerRook.new(8, 8)
+    r1 = Rook.new(7, 7)
+    r2 = Rook.new(8, 7)
+    r3 = Rook.new(7, 8)
+    r4 = Rook.new(8, 8)
     @player_rooks = [r1, r2, r3, r4]
 
     @target_x = nil; @target_y = nil
@@ -215,17 +216,6 @@ class RogueRooks < Gosu::Window
       player_rook.image.draw(player_rook.x * 50,
         player_rook.y * 50 + INFO_BAR_HEIGHT, Z_LEVEL[:rook])
     end
-  end
-end
-
-class PlayerRook
-  attr_accessor :x, :y, :damage, :image
-
-  def initialize(x, y)
-    @x = x
-    @y = y
-    @damage = 0
-    @image = Gosu::Image.new("images/rook.png", tileable: true)
   end
 end
 
