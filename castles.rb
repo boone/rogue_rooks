@@ -11,6 +11,8 @@
 # https://boone42.itch.io
 
 require "gosu"
+require_relative "queen"
+require_relative "projectile"
 
 class RogueRooks < Gosu::Window
   TITLE = "Rogue Rooks"
@@ -216,64 +218,6 @@ class RogueRooks < Gosu::Window
   end
 end
 
-class Queen
-  attr_accessor :x, :y, :image, :vel_x, :vel_y
-
-  def initialize(x, y)
-    @x = x
-    @y = y
-    @image = Gosu::Image.new("images/queen.png", tileable: true)
-    @vel_x = 0
-    @vel_y = 0
-    RogueRooks.occupy_square(x, y)
-  end
-
-  def move_closer
-    # if the square is occupied by another npc, skip this turn
-    # take one step closer
-    # find angle to center
-
-    diff_x = 7.5 - @x
-    diff_y = 7.5 - @y
-
-    angle = Math.atan2(diff_x, diff_y) / (Math::PI / 180.0)
-
-    move = if angle >= -22.5 && angle < 22.5
-      { x: 0, y: 1 } # s
-    elsif angle >= 22.5 && angle < 67.5
-      { x: 1, y: 1 } # se
-    elsif angle >= 67.5 && angle < 112.5
-      { x: 1, y: 0 } # e
-    elsif angle >= 112.5 && angle < 157.5
-      { x: 1, y: -1 } # ne
-    elsif angle >= 157.5 || angle < -157.5
-      { x: 0, y: -1 } # n
-    elsif angle >= -157.5 && angle < -112.5
-      { x: -1, y: -1 } # nw
-    elsif angle >= -112.5 && angle < -67.5
-      { x: -1, y: 0 } # w
-    elsif angle >= -67.5 && angle < -22.5
-      { x: -1, y: 1 } # sw
-    end
-
-    # only move if the square is open
-    orig_x = @x
-    orig_y = @y
-
-    new_x = @x + move[:x]
-    new_y = @y + move[:y]
-
-    unless RogueRooks.occupied_square?(new_x, new_y)
-      RogueRooks.leave_square(orig_x, orig_y)
-
-      @x = new_x
-      @y = new_y
-
-      RogueRooks.occupy_square(new_x, new_y)
-    end
-  end
-end
-
 class PlayerRook
   attr_accessor :x, :y, :damage, :image
 
@@ -282,50 +226,6 @@ class PlayerRook
     @y = y
     @damage = 0
     @image = Gosu::Image.new("images/rook.png", tileable: true)
-  end
-end
-
-class Projectile
-  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot, :done, :square
-
-  def initialize(target_x, target_y)
-    # +25 centers the target
-    @target_x = target_x + 25
-    @target_y = target_y + 25
-
-    @pixel_x = 7.5 * 50.0 + 25
-    @pixel_y = 7.5 * 50.0 + 50 + 25
-
-    diff_x = @target_x - @pixel_x
-    diff_y = @target_y - @pixel_y
-
-    @angle = Math.atan2(diff_y, diff_x)
-
-    @rot = @angle / (Math::PI / 180.0) + 180
-    @image = Gosu::Image.new("images/fireball.png", tileable: true)
-    @velocity = 150.0 # pixels/second
-
-    launch = Gosu::Sample.new("sounds/launch.wav")
-    launch.play
-    @crash = Gosu::Sample.new("sounds/crash.wav")
-    @done = false
-  end
-
-  def move_closer
-    if (@target_x - @pixel_x).abs < 1.0 &&
-      (@target_y - @pixel_y).abs < 1.0
-      @crash.play
-      @done = true
-      return
-    end
-
-    distance = @velocity * 1 / 60.0 # TODO fix
-
-    new_diff_x = distance * Math.cos(@angle)
-    new_diff_y = distance * Math.sin(@angle)
-
-    @pixel_x += new_diff_x
-    @pixel_y += new_diff_y
   end
 end
 
