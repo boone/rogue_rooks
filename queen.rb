@@ -1,25 +1,22 @@
 # frozen_string_literal: true
 
 class Queen
-  attr_accessor :x, :y, :image, :vel_x, :vel_y
+  attr_accessor :x, :y, :image
 
   def initialize(x, y)
     @x = x
     @y = y
+
     @image = Gosu::Image.new("images/queen.png", tileable: true)
-    @vel_x = 0
-    @vel_y = 0
+
     RogueRooks.occupy_square(x, y)
   end
 
   def move_closer
-    # if the square is occupied by another npc, skip this turn
-    # take one step closer
-    # find angle to center
-
     diff_x = 7.5 - @x
     diff_y = 7.5 - @y
 
+    # I think this math might be backwards, but it's currently working
     angle = Math.atan2(diff_x, diff_y) / (Math::PI / 180.0)
 
     move = if angle >= -22.5 && angle < 22.5

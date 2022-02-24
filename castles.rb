@@ -68,10 +68,6 @@ class RogueRooks < Gosu::Window
 
     @npcs = []
 
-    # q1 = Queen.new(1, 15)
-    # q2 = Queen.new(15, 10)
-    # @npcs = [q1, q2]
-
     (0..1).each do |i|
       @npcs << Queen.new(i, 0)
       @npcs << Queen.new(i + 14, 15)
