@@ -4,6 +4,7 @@
 # Castles Theme
 # Gosu Game Jam 2
 # February 2022
+# https://itch.io/jam/gosu-game-jam-2
 
 # Mike Boone
 # https://twitter.com/boonedocks
@@ -179,6 +180,8 @@ class RogueRooks < Gosu::Window
       my_text = <<~EOF
         Made for the Gosu Game Jam 2 in February 2022
 
+        https://itch.io/jam/gosu-game-jam-2
+
         By Mike Boone
         https://twitter.com/boonedocks
         https://github.com/boone
@@ -197,7 +200,7 @@ class RogueRooks < Gosu::Window
 
     @projectiles.each do |projectile|
       projectile.image.draw_rot(projectile.pixel_x, projectile.pixel_y,
-        Z_LEVEL[:projectile], projectile.rot % 360)
+        Z_LEVEL[:projectile], projectile.rotation)
     end
 
     (0..8).each do |x|

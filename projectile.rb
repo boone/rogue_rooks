@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Projectile
-  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot, :done, :square
+  attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rotation, :done
 
   def initialize(target_x, target_y)
     # +25 (half the square) centers the target
@@ -18,7 +18,7 @@ class Projectile
 
     @angle = Math.atan2(diff_y, diff_x)
 
-    @rot = @angle / (Math::PI / 180.0) + 180
+    @rotation = @angle / (Math::PI / 180.0) + 180
     @image = Gosu::Image.new("images/fireball.png", tileable: true)
     @velocity = 150.0 # pixels/second
 
