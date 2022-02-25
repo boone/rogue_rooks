@@ -71,6 +71,7 @@ class RogueRooks < Gosu::Window
     @title_font = Gosu::Font.new(40, italic: true)
     @score_font = Gosu::Font.new(30, bold: true)
     @about_font = Gosu::Font.new(20)
+    @license_font = Gosu::Font.new(15)
 
     @song.volume = 0.15
     @song.play(true)
@@ -176,10 +177,14 @@ class RogueRooks < Gosu::Window
         https://twitter.com/boonedocks
         https://github.com/boone
         https://boone42.itch.io
+
+        Save your rooks by shooting fireballs at the attacking chess pieces.
+
+        Click to play!
       EOF
 
-      @about_font.draw_text(my_text, 5, 55, Z_LEVEL[:text])
-      @about_font.draw_text(Gosu::LICENSES, 5, 555, Z_LEVEL[:text])
+      @about_font.draw_text(my_text, 10, 75, Z_LEVEL[:text])
+      @license_font.draw_text(Gosu::LICENSES, 10, 770, Z_LEVEL[:text])
 
       return
     end
