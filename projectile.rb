@@ -4,12 +4,14 @@ class Projectile
   attr_accessor :target_x, :target_y, :pixel_x, :pixel_y, :image, :rot, :done, :square
 
   def initialize(target_x, target_y)
-    # +25 centers the target
-    @target_x = target_x + 25
-    @target_y = target_y + 25
+    # +25 (half the square) centers the target
 
-    @pixel_x = 7.5 * 50.0 + 25
-    @pixel_y = 7.5 * 50.0 + 50 + 25
+    half_square_size = RogueRooks::SQUARE_SIZE / 2
+    @target_x = target_x + half_square_size
+    @target_y = target_y + half_square_size
+
+    @pixel_x = 7.5 * RogueRooks::SQUARE_SIZE.to_f + half_square_size
+    @pixel_y = 7.5 * RogueRooks::SQUARE_SIZE.to_f + RogueRooks::INFO_BAR_HEIGHT + half_square_size
 
     diff_x = @target_x - @pixel_x
     diff_y = @target_y - @pixel_y
@@ -34,7 +36,7 @@ class Projectile
       return
     end
 
-    distance = @velocity * 1 / 60.0 # TODO fix
+    distance = @velocity / Gosu.fps
 
     new_diff_x = distance * Math.cos(@angle)
     new_diff_y = distance * Math.sin(@angle)

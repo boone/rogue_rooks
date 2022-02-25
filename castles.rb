@@ -33,9 +33,8 @@ class RogueRooks < Gosu::Window
 
   SQUARE_SIZE = 50
 
-  # grid coordinates to top-left pixel
-  def self.grid_to_pixel(grid_x, grid_y)
-    # TODO
+  def self.reset_occupied
+    @@occupied = {}
   end
 
   def self.occupy_square(grid_x, grid_y)
@@ -66,7 +65,23 @@ class RogueRooks < Gosu::Window
 
     @song = Gosu::Song.new("sounds/song_test.wav")
 
+    @title_font = Gosu::Font.new(40, italic: true)
+    @score_font = Gosu::Font.new(30, bold: true)
+    @about_font = Gosu::Font.new(20)
+
+    @song.volume = 0.15
+    @song.play(true)
+
+    @show_about = true
+  end
+
+  def new_game
+    RogueRooks.reset_occupied
+
+    @score = 0
+
     @npcs = []
+    @projectiles = []
 
     (0..1).each do |i|
       @npcs << Queen.new(i, 0)
@@ -75,23 +90,13 @@ class RogueRooks < Gosu::Window
       @npcs << Queen.new(0, i + 14)
     end
 
-    @song.volume = 0.15
-    @song.play(true)
-    @score = 0
-
     r1 = Rook.new(7, 7)
     r2 = Rook.new(8, 7)
     r3 = Rook.new(7, 8)
     r4 = Rook.new(8, 8)
     @player_rooks = [r1, r2, r3, r4]
 
-    @target_x = nil; @target_y = nil
-
-    @title_font = Gosu::Font.new(40, italic: true)
-    @score_font = Gosu::Font.new(30, bold: true)
-    @about_font = Gosu::Font.new(20)
-    @show_about = true
-    @projectiles = []
+    @time_check = Time.now
     @shoot_delay = Time.now
   end
 
@@ -99,6 +104,7 @@ class RogueRooks < Gosu::Window
     if button_id == Gosu::MS_LEFT
       if @show_about
         @show_about = false
+        new_game
       else
         if @projectiles.count < 6
           current_time = Time.now
@@ -117,9 +123,6 @@ class RogueRooks < Gosu::Window
     if @show_about
       @song.volume = 0.05
       return
-    else
-      @time_check ||= Time.now
-      @song.volume = 0.15
     end
 
     # place target
@@ -205,12 +208,13 @@ class RogueRooks < Gosu::Window
     end
 
     @npcs.each do |npc|
-      npc.image.draw(npc.x * 50, npc.y * 50 + INFO_BAR_HEIGHT, Z_LEVEL[:npc])
+      npc.image.draw(npc.x * SQUARE_SIZE, npc.y * SQUARE_SIZE + INFO_BAR_HEIGHT,
+        Z_LEVEL[:npc])
     end
 
     @player_rooks.each do |player_rook|
-      player_rook.image.draw(player_rook.x * 50,
-        player_rook.y * 50 + INFO_BAR_HEIGHT, Z_LEVEL[:rook])
+      player_rook.image.draw(player_rook.x * SQUARE_SIZE,
+        player_rook.y * SQUARE_SIZE + INFO_BAR_HEIGHT, Z_LEVEL[:rook])
     end
   end
 end

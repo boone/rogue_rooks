@@ -13,6 +13,7 @@ class Queen
   end
 
   def move_closer
+    # TODO this should actually target an available rook, not just the center
     diff_x = 7.5 - @x
     diff_y = 7.5 - @y
 
