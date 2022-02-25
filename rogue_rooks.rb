@@ -34,6 +34,8 @@ class RogueRooks < Gosu::Window
 
   SQUARE_SIZE = 50
 
+  GAME_OVER_WAIT = 1 # in seconds
+
   def self.reset_occupied
     @@occupied = {}
   end
@@ -76,43 +78,13 @@ class RogueRooks < Gosu::Window
     @show_about = true
   end
 
-  def new_game
-    RogueRooks.reset_occupied
-
-    @score = 0
-    @game_over = false
-
-    @npcs = []
-    @projectiles = []
-
-    (0..1).each do |i|
-      @npcs << Queen.new(i, 0)
-      @npcs << Queen.new(i + 14, 15)
-      @npcs << Queen.new(15, i)
-      @npcs << Queen.new(0, i + 14)
-    end
-
-    r1 = Rook.new(7, 7)
-    r2 = Rook.new(8, 7)
-    r3 = Rook.new(7, 8)
-    r4 = Rook.new(8, 8)
-    @player_rooks = [r1, r2, r3, r4]
-
-    @time_check = Time.now
-    @shoot_delay = Time.now
-  end
-
   def button_down(button_id)
     if button_id == Gosu::MS_LEFT
       if @show_about
         @show_about = false
         new_game
-      elsif @game_over
-        if @game_over_time && @game_over_time + 5 < Time.now
-          @game_over = false
-          @game_over_time = nil
-          new_game
-        end
+      elsif @game_over && @game_over_wait_done
+        new_game
       else
         if @projectiles.count < 6
           current_time = Time.now
@@ -134,6 +106,11 @@ class RogueRooks < Gosu::Window
     elsif @game_over
       @song.volume = 0.05
       @game_over_time ||= Time.now
+
+      if @game_over_time + GAME_OVER_WAIT < Time.now
+        @game_over_wait_done = true
+      end
+
       return
     end
 
@@ -177,7 +154,7 @@ class RogueRooks < Gosu::Window
           end
         end
 
-        @game_over = true if @player_rooks.count == 0
+        game_over if @player_rooks.count == 0
       end
       @time_check = Time.now
     end
@@ -242,7 +219,47 @@ class RogueRooks < Gosu::Window
       Gosu.draw_rect(0, INFO_BAR_HEIGHT, GAME_WIDTH, GAME_HEIGHT, game_over_square_color, Z_LEVEL[:text] - 1)
 
       @score_font.draw_text(game_over_text, GAME_WIDTH / 2 - game_over_text_width / 2, 220, Z_LEVEL[:text])
+
+      if @game_over_wait_done
+        click_text = "Click to play again"
+        click_text_width = @score_font.text_width(click_text)
+        @score_font.draw_text(click_text, GAME_WIDTH / 2 - click_text_width / 2, 600, Z_LEVEL[:text])
+      end
     end
+  end
+
+  private
+
+  def new_game
+    RogueRooks.reset_occupied
+
+    @score = 0
+    @game_over = false
+    @game_over_time = nil
+
+    @npcs = []
+    @projectiles = []
+
+    (0..1).each do |i|
+      @npcs << Queen.new(i, 0)
+      @npcs << Queen.new(i + 14, 15)
+      @npcs << Queen.new(15, i)
+      @npcs << Queen.new(0, i + 14)
+    end
+
+    r1 = Rook.new(7, 7)
+    r2 = Rook.new(8, 7)
+    r3 = Rook.new(7, 8)
+    r4 = Rook.new(8, 8)
+    @player_rooks = [r1, r2, r3, r4]
+
+    @time_check = Time.now
+    @shoot_delay = Time.now
+  end
+
+  def game_over
+    @game_over = true
+    @game_over_wait_done = false
   end
 end
 
