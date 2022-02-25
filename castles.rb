@@ -80,6 +80,7 @@ class RogueRooks < Gosu::Window
     RogueRooks.reset_occupied
 
     @score = 0
+    @game_over = false
 
     @npcs = []
     @projectiles = []
@@ -106,6 +107,12 @@ class RogueRooks < Gosu::Window
       if @show_about
         @show_about = false
         new_game
+      elsif @game_over
+        if @game_over_time && @game_over_time + 5 < Time.now
+          @game_over = false
+          @game_over_time = nil
+          new_game
+        end
       else
         if @projectiles.count < 6
           current_time = Time.now
@@ -123,6 +130,10 @@ class RogueRooks < Gosu::Window
   def update
     if @show_about
       @song.volume = 0.05
+      return
+    elsif @game_over
+      @song.volume = 0.05
+      @game_over_time ||= Time.now
       return
     end
 
@@ -165,6 +176,8 @@ class RogueRooks < Gosu::Window
             @player_rooks.delete_at(i)
           end
         end
+
+        @game_over = true if @player_rooks.count == 0
       end
       @time_check = Time.now
     end
@@ -174,7 +187,7 @@ class RogueRooks < Gosu::Window
     @title_font.draw_text(TITLE, 5, 5, Z_LEVEL[:text])
     score_width = @score_font.text_width(@score)
     @score_font.draw_text(@score, width - score_width - 5, 10, Z_LEVEL[:text])
-    @score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
+    @score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text]) # TODO remove
 
     if @show_about
       my_text = <<~EOF
@@ -218,6 +231,17 @@ class RogueRooks < Gosu::Window
     @player_rooks.each do |player_rook|
       player_rook.image.draw(player_rook.x * SQUARE_SIZE,
         player_rook.y * SQUARE_SIZE + INFO_BAR_HEIGHT, Z_LEVEL[:rook])
+    end
+
+    if @game_over
+      game_over_text = "Game over!"
+      game_over_text_width = @score_font.text_width(game_over_text)
+
+      # draw semi-opaque square over game
+      game_over_square_color = Gosu::Color.rgba(100, 100, 100, 200)
+      Gosu.draw_rect(0, INFO_BAR_HEIGHT, GAME_WIDTH, GAME_HEIGHT, game_over_square_color, Z_LEVEL[:text] - 1)
+
+      @score_font.draw_text(game_over_text, GAME_WIDTH / 2 - game_over_text_width / 2, 220, Z_LEVEL[:text])
     end
   end
 end
