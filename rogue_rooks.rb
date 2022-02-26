@@ -147,22 +147,6 @@ class RogueRooks < Gosu::Window
       end
     end
 
-    # if update_time - @time_check > 2.5
-    #   @npcs.each do |npc|
-    #     npc.move_closer
-    #
-    #     @player_rooks.each_with_index do |player_rook, i|
-    #       if npc.x == player_rook.x && npc.y == player_rook.y
-    #         # todo explosion graphic and sound
-    #         @player_rooks.delete_at(i)
-    #       end
-    #     end
-    #
-    #     game_over if @player_rooks.count == 0
-    #   end
-    #   @time_check = update_time
-    # end
-
     @npcs.each do |npc|
       next unless update_time - npc.last_move_time > npc.class::SPEED
 
@@ -178,25 +162,24 @@ class RogueRooks < Gosu::Window
       game_over if @player_rooks.count == 0
     end
 
-    @time_check = update_time
-
     if update_time - @last_spawn > @spawn_rate
-      new_npc_class = [Queen, Knight, Knight].sample # duplication is for overweighting
-
-      new_row_col = (0..15).to_a.sample
-      x_y = [true, false].sample
-      left_right_top_bottom = [0, 15].sample
-
-      new_position = if x_y
-        [new_row_col, left_right_top_bottom]
-      else
-        [left_right_top_bottom, new_row_col]
-      end
-
-      unless RogueRooks.occupied_square?(*new_position)
-        @npcs << new_npc_class.new(*new_position)
-        @last_spawn = update_time
-      end
+      spawn_new_npc
+      # new_npc_class = [Queen, Knight, Knight].sample # duplication is for overweighting
+      #
+      # new_row_col = (0..15).to_a.sample
+      # x_y = [true, false].sample
+      # left_right_top_bottom = [0, 15].sample
+      #
+      # new_position = if x_y
+      #   [new_row_col, left_right_top_bottom]
+      # else
+      #   [left_right_top_bottom, new_row_col]
+      # end
+      #
+      # unless RogueRooks.occupied_square?(*new_position)
+      #   @npcs << new_npc_class.new(*new_position)
+      #   @last_spawn = update_time
+      # end
     end
   end
 
@@ -205,6 +188,7 @@ class RogueRooks < Gosu::Window
     score_width = @score_font.text_width(@score)
     @score_font.draw_text(@score, width - score_width - 5, 10, Z_LEVEL[:text])
     #@score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
+    @score_font.draw_text(@projectiles.count, 400, 10, Z_LEVEL[:text])
 
     if @show_about
       my_text = <<~EOF
@@ -286,15 +270,8 @@ class RogueRooks < Gosu::Window
     @npcs = []
     @projectiles = []
 
-    # (0..1).each do |i|
-    #   @npcs << Queen.new(i, 0)
-    #   @npcs << Queen.new(i + 14, 15)
-    #   @npcs << Queen.new(15, i)
-    #   @npcs << Queen.new(0, i + 14)
-    # end
-
-    # @npcs << Knight.new(7, 0)
-    @npcs << Knight.new(15, 15)
+    # initial attackers
+    4.times { spawn_new_npc }
 
     r1 = Rook.new(7, 7)
     r2 = Rook.new(8, 7)
@@ -302,9 +279,8 @@ class RogueRooks < Gosu::Window
     r4 = Rook.new(8, 8)
     @player_rooks = [r1, r2, r3, r4]
 
-    @spawn_rate = 2.0 # 1 every @spawn_rate seconds
+    @spawn_rate = 4.0 # 1 every @spawn_rate seconds
 
-    @time_check = Time.now
     @shoot_delay = Time.now
     @last_spawn = Time.now
   end
@@ -315,11 +291,29 @@ class RogueRooks < Gosu::Window
   end
 
   def increase_spawn_rate
-    @spawn_rate -= 0.5
+    @spawn_rate -= 0.1
 
-    @spawn_rate = [@spawn_rate, 0.5].max
+    @spawn_rate = [@spawn_rate, 1.0].max
   end
 
+  def spawn_new_npc
+    new_npc_class = [Queen, Knight, Knight].sample # duplication is for overweighting
+
+    new_row_col = (0..15).to_a.sample
+    x_y = [true, false].sample
+    left_right_top_bottom = [0, 15].sample
+
+    new_position = if x_y
+      [new_row_col, left_right_top_bottom]
+    else
+      [left_right_top_bottom, new_row_col]
+    end
+
+    unless RogueRooks.occupied_square?(*new_position)
+      @npcs << new_npc_class.new(*new_position)
+      @last_spawn = Time.now
+    end
+  end
 end
 
 RogueRooks.new.show
