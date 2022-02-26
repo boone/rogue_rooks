@@ -14,6 +14,7 @@
 require "gosu"
 require_relative "rook"
 require_relative "queen"
+require_relative "knight"
 require_relative "projectile"
 
 class RogueRooks < Gosu::Window
@@ -245,12 +246,15 @@ class RogueRooks < Gosu::Window
     @npcs = []
     @projectiles = []
 
-    (0..1).each do |i|
-      @npcs << Queen.new(i, 0)
-      @npcs << Queen.new(i + 14, 15)
-      @npcs << Queen.new(15, i)
-      @npcs << Queen.new(0, i + 14)
-    end
+    # (0..1).each do |i|
+    #   @npcs << Queen.new(i, 0)
+    #   @npcs << Queen.new(i + 14, 15)
+    #   @npcs << Queen.new(15, i)
+    #   @npcs << Queen.new(0, i + 14)
+    # end
+
+    # @npcs << Knight.new(7, 0)
+    @npcs << Knight.new(15, 15)
 
     r1 = Rook.new(7, 7)
     r2 = Rook.new(8, 7)

@@ -3,6 +3,8 @@
 class Queen
   attr_accessor :x, :y, :image
 
+  POINT_VALUE = 100
+
   def initialize(x, y)
     @x = x
     @y = y
