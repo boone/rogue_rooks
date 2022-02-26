@@ -88,7 +88,7 @@ class RogueRooks < Gosu::Window
       elsif @game_over && @game_over_wait_done
         new_game
       else
-        if @projectiles.count < 6
+        if @projectiles.count < 6 && @target_x && @target_y
           current_time = Time.now
           if current_time - @shoot_delay > 0.2
             @shoot_delay = current_time
@@ -188,7 +188,7 @@ class RogueRooks < Gosu::Window
     score_width = @score_font.text_width(@score)
     @score_font.draw_text(@score, width - score_width - 5, 10, Z_LEVEL[:text])
     #@score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
-    @score_font.draw_text(@projectiles.count, 400, 10, Z_LEVEL[:text])
+    #@score_font.draw_text(@projectiles.count, 400, 10, Z_LEVEL[:text]) if @projectiles
 
     if @show_about
       my_text = <<~EOF
