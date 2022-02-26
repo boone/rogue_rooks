@@ -138,8 +138,8 @@ class RogueRooks < Gosu::Window
 
           if npc.x == square_target_x && npc.y == square_target_y
             RogueRooks.leave_square(npc.x, npc.y)
+            @score += npc.class::POINT_VALUE
             @npcs.delete_at(j)
-            @score += 100
           end
         end
       end
@@ -159,6 +159,25 @@ class RogueRooks < Gosu::Window
         game_over if @player_rooks.count == 0
       end
       @time_check = Time.now
+    end
+
+    if Time.now - @last_spawn > @spawn_rate
+      new_npc_class = [Queen, Knight].sample # TODO add bishop and weight selection
+
+      new_row_col = (0..15).to_a.sample
+      x_y = [true, false].sample
+      left_right_top_bottom = [0, 15].sample
+
+      new_position = if x_y
+        [new_row_col, left_right_top_bottom]
+      else
+        [left_right_top_bottom, new_row_col]
+      end
+
+      unless RogueRooks.occupied_square?(*new_position)
+        @npcs << new_npc_class.new(*new_position)
+        @last_spawn = Time.now
+      end
     end
   end
 
@@ -262,14 +281,24 @@ class RogueRooks < Gosu::Window
     r4 = Rook.new(8, 8)
     @player_rooks = [r1, r2, r3, r4]
 
+    @spawn_rate = 5.0 # 1 every 5 seconds, will decrease
+
     @time_check = Time.now
     @shoot_delay = Time.now
+    @last_spawn = Time.now
   end
 
   def game_over
     @game_over = true
     @game_over_wait_done = false
   end
+
+  def increase_spawn_rate
+    @spawn_rate -= 0.5
+
+    @spawn_rate = [@spawn_rate, 0.5].max
+  end
+
 end
 
 RogueRooks.new.show
