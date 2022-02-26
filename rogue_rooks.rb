@@ -15,6 +15,7 @@ require "gosu"
 require_relative "rook"
 require_relative "queen"
 require_relative "knight"
+require_relative "bishop"
 require_relative "projectile"
 
 class RogueRooks < Gosu::Window
@@ -163,23 +164,7 @@ class RogueRooks < Gosu::Window
     end
 
     if update_time - @last_spawn > @spawn_rate
-      spawn_new_npc
-      # new_npc_class = [Queen, Knight, Knight].sample # duplication is for overweighting
-      #
-      # new_row_col = (0..15).to_a.sample
-      # x_y = [true, false].sample
-      # left_right_top_bottom = [0, 15].sample
-      #
-      # new_position = if x_y
-      #   [new_row_col, left_right_top_bottom]
-      # else
-      #   [left_right_top_bottom, new_row_col]
-      # end
-      #
-      # unless RogueRooks.occupied_square?(*new_position)
-      #   @npcs << new_npc_class.new(*new_position)
-      #   @last_spawn = update_time
-      # end
+      [1, 1, 2].sample.times { spawn_new_npc }
     end
   end
 
@@ -291,13 +276,13 @@ class RogueRooks < Gosu::Window
   end
 
   def increase_spawn_rate
-    @spawn_rate -= 0.1
+    @spawn_rate -= 0.2
 
     @spawn_rate = [@spawn_rate, 1.0].max
   end
 
   def spawn_new_npc
-    new_npc_class = [Queen, Knight, Knight].sample # duplication is for overweighting
+    new_npc_class = [Queen, Knight, Knight, Bishop, Bishop].sample # duplication is for overweighting
 
     new_row_col = (0..15).to_a.sample
     x_y = [true, false].sample
