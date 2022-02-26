@@ -11,7 +11,10 @@ class Knight
     @y = y
     @last_move_time = Time.now
 
-    @image = Gosu::Image.new("images/knight.png", tileable: true)
+    @image_right = Gosu::Image.new("images/knight_right.png", tileable: true)
+    @image_left = Gosu::Image.new("images/knight_left.png", tileable: true)
+
+    set_image_direction
 
     RogueRooks.occupy_square(x, y)
   end
@@ -54,9 +57,21 @@ class Knight
       @x = new_x
       @y = new_y
 
+      set_image_direction
+
       RogueRooks.occupy_square(new_x, new_y)
     end
 
     @last_move_time = Time.now
+  end
+
+  private
+
+  def set_image_direction
+    @image = if @x < 7.5
+      @image_right
+    else
+      @image_left
+    end
   end
 end
