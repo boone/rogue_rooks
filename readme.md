@@ -26,3 +26,9 @@ By Mike Boone
 1. Move the red target around the board. Click to shoot a fireball at the oncoming chess pieces.
 1. Protect the rooks in the center! If the pieces collide with all of your rooks, the game is over.
 1. Click to play again.
+
+## Made With
+
+* Gosu - https://github.com/gosu/
+* Pixelmator Pro - https://www.pixelmator.com/pro/
+* GarageBand - https://www.apple.com/mac/garageband/
