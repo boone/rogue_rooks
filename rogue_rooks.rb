@@ -102,14 +102,16 @@ class RogueRooks < Gosu::Window
   end
 
   def update
+    update_time = Time.now # so we don't keep calculating
+
     if @show_about
       @song.volume = 0.05
       return
     elsif @game_over
       @song.volume = 0.05
-      @game_over_time ||= Time.now
+      @game_over_time ||= update_time
 
-      if @game_over_time + GAME_OVER_WAIT < Time.now
+      if @game_over_time + GAME_OVER_WAIT < update_time
         @game_over_wait_done = true
       end
 
@@ -130,39 +132,56 @@ class RogueRooks < Gosu::Window
     @projectiles.each_with_index do |projectile, i|
       projectile.move_closer
 
-      if projectile.done
-        @projectiles.delete_at(i)
-        @npcs.each_with_index do |npc, j|
-          square_target_x = projectile.target_x / SQUARE_SIZE
-          square_target_y = (projectile.target_y - INFO_BAR_HEIGHT) / SQUARE_SIZE
+      next unless projectile.done
 
-          if npc.x == square_target_x && npc.y == square_target_y
-            RogueRooks.leave_square(npc.x, npc.y)
-            @score += npc.class::POINT_VALUE
-            @npcs.delete_at(j)
-          end
+      @projectiles.delete_at(i)
+      @npcs.each_with_index do |npc, j|
+        square_target_x = projectile.target_x / SQUARE_SIZE
+        square_target_y = (projectile.target_y - INFO_BAR_HEIGHT) / SQUARE_SIZE
+
+        if npc.x == square_target_x && npc.y == square_target_y
+          RogueRooks.leave_square(npc.x, npc.y)
+          @score += npc.class::POINT_VALUE
+          @npcs.delete_at(j)
         end
       end
     end
 
-    if Time.now - @time_check > 2.5
-      @npcs.each do |npc|
-        npc.move_closer
+    # if update_time - @time_check > 2.5
+    #   @npcs.each do |npc|
+    #     npc.move_closer
+    #
+    #     @player_rooks.each_with_index do |player_rook, i|
+    #       if npc.x == player_rook.x && npc.y == player_rook.y
+    #         # todo explosion graphic and sound
+    #         @player_rooks.delete_at(i)
+    #       end
+    #     end
+    #
+    #     game_over if @player_rooks.count == 0
+    #   end
+    #   @time_check = update_time
+    # end
 
-        @player_rooks.each_with_index do |player_rook, i|
-          if npc.x == player_rook.x && npc.y == player_rook.y
-            # todo explosion graphic and sound
-            @player_rooks.delete_at(i)
-          end
+    @npcs.each do |npc|
+      next unless update_time - npc.last_move_time > npc.class::SPEED
+
+      npc.move_closer
+
+      @player_rooks.each_with_index do |player_rook, i|
+        if npc.x == player_rook.x && npc.y == player_rook.y
+          # todo explosion graphic and sound
+          @player_rooks.delete_at(i)
         end
-
-        game_over if @player_rooks.count == 0
       end
-      @time_check = Time.now
+
+      game_over if @player_rooks.count == 0
     end
 
-    if Time.now - @last_spawn > @spawn_rate
-      new_npc_class = [Queen, Knight].sample # TODO add bishop and weight selection
+    @time_check = update_time
+
+    if update_time - @last_spawn > @spawn_rate
+      new_npc_class = [Queen, Knight, Knight].sample # duplication is for overweighting
 
       new_row_col = (0..15).to_a.sample
       x_y = [true, false].sample
@@ -176,7 +195,7 @@ class RogueRooks < Gosu::Window
 
       unless RogueRooks.occupied_square?(*new_position)
         @npcs << new_npc_class.new(*new_position)
-        @last_spawn = Time.now
+        @last_spawn = update_time
       end
     end
   end
@@ -185,7 +204,7 @@ class RogueRooks < Gosu::Window
     @title_font.draw_text(TITLE, 5, 5, Z_LEVEL[:text])
     score_width = @score_font.text_width(@score)
     @score_font.draw_text(@score, width - score_width - 5, 10, Z_LEVEL[:text])
-    @score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text]) # TODO remove
+    #@score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
 
     if @show_about
       my_text = <<~EOF
@@ -197,6 +216,8 @@ class RogueRooks < Gosu::Window
         https://twitter.com/boonedocks
         https://github.com/boone
         https://boone42.itch.io
+
+        The rooks do not want to play chess anymore. The other pieces are angry!
 
         Save your rooks by shooting fireballs at the attacking chess pieces.
 
@@ -281,7 +302,7 @@ class RogueRooks < Gosu::Window
     r4 = Rook.new(8, 8)
     @player_rooks = [r1, r2, r3, r4]
 
-    @spawn_rate = 5.0 # 1 every 5 seconds, will decrease
+    @spawn_rate = 2.0 # 1 every @spawn_rate seconds
 
     @time_check = Time.now
     @shoot_delay = Time.now

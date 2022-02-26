@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 class Knight
-  attr_accessor :x, :y, :image
+  attr_accessor :x, :y, :image, :last_move_time
 
   POINT_VALUE = 50
+  SPEED = 2.5 # move after this many seconds
 
   def initialize(x, y)
     @x = x
     @y = y
+    @last_move_time = Time.now
 
     @image = Gosu::Image.new("images/knight.png", tileable: true)
 
@@ -54,5 +56,7 @@ class Knight
 
       RogueRooks.occupy_square(new_x, new_y)
     end
+
+    @last_move_time = Time.now
   end
 end
