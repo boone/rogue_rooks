@@ -37,3 +37,7 @@ By Mike Boone
 * Atom for Mac
 * iOS Voice Recorder
 * GarageBand
+
+## License
+
+See [license.md].

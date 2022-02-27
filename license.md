@@ -5,3 +5,5 @@ Anyone is authorized to use these PNG and WAV files in conjunction with playing,
 reviewing, or making live or recorded videos of playing this game.
 
 All other files, including source code, use the MIT license.
+
+For libraries used in this project, please refer to their respective licenses.
