@@ -72,14 +72,14 @@ class RogueRooks < Gosu::Window
     @target = Gosu::Image.new("images/target.png", tileable: true)
     @info_bar = Gosu::Image.new("images/title.png", tileable: true)
 
-    @song = Gosu::Song.new("sounds/song_test.wav")
+    @song = Gosu::Song.new("sounds/song.wav")
     @crash_sound = Gosu::Sample.new("sounds/crash.wav")
 
     @score_font = Gosu::Font.new(30, bold: true)
     @about_font = Gosu::Font.new(20)
     @license_font = Gosu::Font.new(15)
 
-    @song.volume = 0.15
+    @song.volume = 0.25
     @song.play(true)
 
     @show_about = true
@@ -108,10 +108,10 @@ class RogueRooks < Gosu::Window
     update_time = Time.now # so we don't keep calculating
 
     if @show_about
-      @song.volume = 0.05
+      @song.volume = 0.25
       return
     elsif @game_over
-      @song.volume = 0.05
+      @song.volume = 0.25
       @game_over_time ||= update_time
 
       if @game_over_time + GAME_OVER_WAIT < update_time
@@ -119,6 +119,8 @@ class RogueRooks < Gosu::Window
       end
 
       return
+    else
+      @song.volume = 0.5
     end
 
     # place target
