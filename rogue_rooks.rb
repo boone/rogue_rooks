@@ -196,7 +196,7 @@ class RogueRooks < Gosu::Window
     score_width = @score_font.text_width(@score)
     @score_font.draw_text(@score, width - score_width - 30, 10, Z_LEVEL[:text])
     #@score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
-    @score_font.draw_text(@crashes.count, 400, 10, Z_LEVEL[:text]) if @crashes
+    #@score_font.draw_text(@crashes.count, 400, 10, Z_LEVEL[:text]) if @crashes
 
     if @show_about
       my_text = <<~EOF
