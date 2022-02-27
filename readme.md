@@ -11,6 +11,8 @@ By Mike Boone
 * https://github.com/boone
 * https://boone42.itch.io
 
+![image](screen_shot.png)
+
 Rooks are little castles in chess. They do not want to play chess anymore. The other pieces are angry! Save your rooks by shooting fireballs at the attacking chess pieces.
 
 ## How to Start the Game
