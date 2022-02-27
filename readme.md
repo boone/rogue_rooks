@@ -29,6 +29,11 @@ By Mike Boone
 
 ## Made With
 
-* Gosu - https://github.com/gosu/
-* Pixelmator Pro - https://www.pixelmator.com/pro/
-* GarageBand - https://www.apple.com/mac/garageband/
+* Gosu
+* Homebrew for Mac
+* Pencil/paper/ruler
+* iOS Camera & Photos
+* Pixelmator Pro for Mac
+* Atom for Mac
+* iOS Voice Recorder
+* GarageBand

@@ -22,6 +22,7 @@ class RogueRooks < Gosu::Window
   TITLE = "Rogue Rooks"
 
   Z_LEVEL = {
+    info_bar: 0,
     board: 0,
     npc: 1,
     rook: 2,
@@ -67,10 +68,10 @@ class RogueRooks < Gosu::Window
 
     @board = Gosu::Image.new("images/4x4_board.png", tileable: true)
     @target = Gosu::Image.new("images/target.png", tileable: true)
+    @info_bar = Gosu::Image.new("images/title.png", tileable: true)
 
     @song = Gosu::Song.new("sounds/song_test.wav")
 
-    @title_font = Gosu::Font.new(40, italic: true)
     @score_font = Gosu::Font.new(30, bold: true)
     @about_font = Gosu::Font.new(20)
     @license_font = Gosu::Font.new(15)
@@ -169,9 +170,9 @@ class RogueRooks < Gosu::Window
   end
 
   def draw
-    @title_font.draw_text(TITLE, 5, 5, Z_LEVEL[:text])
+    @info_bar.draw(0, 0, Z_LEVEL[:info_bar])
     score_width = @score_font.text_width(@score)
-    @score_font.draw_text(@score, width - score_width - 5, 10, Z_LEVEL[:text])
+    @score_font.draw_text(@score, width - score_width - 30, 10, Z_LEVEL[:text])
     #@score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
     #@score_font.draw_text(@projectiles.count, 400, 10, Z_LEVEL[:text]) if @projectiles
 
