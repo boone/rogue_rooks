@@ -173,7 +173,12 @@ class RogueRooks < Gosu::Window
 
       @player_rooks.each_with_index do |player_rook, i|
         if npc.x == player_rook.x && npc.y == player_rook.y
-          # todo explosion graphic and sound
+          @crashes << Crash.new(
+            player_rook.x * SQUARE_SIZE + SQUARE_SIZE / 2,
+            player_rook.y * SQUARE_SIZE + SQUARE_SIZE / 2 + INFO_BAR_HEIGHT
+          )
+
+          @crash_sound.play
           @player_rooks.delete_at(i)
         end
       end
