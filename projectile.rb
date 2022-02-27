@@ -24,14 +24,12 @@ class Projectile
 
     launch = Gosu::Sample.new("sounds/launch.wav")
     launch.play
-    @crash = Gosu::Sample.new("sounds/crash.wav")
     @done = false
   end
 
   def move_closer
     if (@target_x - @pixel_x).abs < 2.0 &&
       (@target_y - @pixel_y).abs < 2.0
-      @crash.play
       @done = true
       return
     end

@@ -17,6 +17,7 @@ require_relative "queen"
 require_relative "knight"
 require_relative "bishop"
 require_relative "projectile"
+require_relative "crash"
 
 class RogueRooks < Gosu::Window
   TITLE = "Rogue Rooks"
@@ -26,7 +27,8 @@ class RogueRooks < Gosu::Window
     board: 0,
     npc: 1,
     rook: 2,
-    projectile: 3,
+    crash: 3,
+    projectile: 4,
     target: 10,
     text: 100,
   }.freeze
@@ -71,6 +73,7 @@ class RogueRooks < Gosu::Window
     @info_bar = Gosu::Image.new("images/title.png", tileable: true)
 
     @song = Gosu::Song.new("sounds/song_test.wav")
+    @crash_sound = Gosu::Sample.new("sounds/crash.wav")
 
     @score_font = Gosu::Font.new(30, bold: true)
     @about_font = Gosu::Font.new(20)
@@ -96,8 +99,6 @@ class RogueRooks < Gosu::Window
             @shoot_delay = current_time
             @projectiles << Projectile.new(@target_x, @target_y)
           end
-        else
-          # play out of ammo sounds?
         end
       end
     end
@@ -136,7 +137,12 @@ class RogueRooks < Gosu::Window
 
       next unless projectile.done
 
+      @crashes << Crash.new(projectile.pixel_x, projectile.pixel_y)
+
       @projectiles.delete_at(i)
+
+      collision = false
+
       @npcs.each_with_index do |npc, j|
         square_target_x = projectile.target_x / SQUARE_SIZE
         square_target_y = (projectile.target_y - INFO_BAR_HEIGHT) / SQUARE_SIZE
@@ -144,9 +150,20 @@ class RogueRooks < Gosu::Window
         if npc.x == square_target_x && npc.y == square_target_y
           RogueRooks.leave_square(npc.x, npc.y)
           @score += npc.class::POINT_VALUE
+          collision = true
           @npcs.delete_at(j)
         end
       end
+
+      @crash_sound.play(collision ? 0.9 : 0.4)
+    end
+
+    @crashes.each_with_index do |crash, i|
+      crash.update
+
+      next unless crash.done
+
+      @crashes.delete_at(i)
     end
 
     @npcs.each do |npc|
@@ -174,7 +191,7 @@ class RogueRooks < Gosu::Window
     score_width = @score_font.text_width(@score)
     @score_font.draw_text(@score, width - score_width - 30, 10, Z_LEVEL[:text])
     #@score_font.draw_text(Gosu.fps, 400, 10, Z_LEVEL[:text])
-    #@score_font.draw_text(@projectiles.count, 400, 10, Z_LEVEL[:text]) if @projectiles
+    @score_font.draw_text(@crashes.count, 400, 10, Z_LEVEL[:text]) if @crashes
 
     if @show_about
       my_text = <<~EOF
@@ -194,7 +211,12 @@ class RogueRooks < Gosu::Window
         Click to play!
       EOF
 
+      my_license = <<~EOF
+        See license.md accompanying this game project.
+      EOF
+
       @about_font.draw_text(my_text, 10, 75, Z_LEVEL[:text])
+      @license_font.draw_text(my_license, 10, 730, Z_LEVEL[:text])
       @license_font.draw_text(Gosu::LICENSES, 10, 770, Z_LEVEL[:text])
 
       return
@@ -208,6 +230,8 @@ class RogueRooks < Gosu::Window
       projectile.image.draw_rot(projectile.pixel_x, projectile.pixel_y,
         Z_LEVEL[:projectile], projectile.rotation)
     end
+
+    @crashes.each { |crash| crash.draw }
 
     (0..8).each do |x|
       (0..8).each do |y|
@@ -255,6 +279,7 @@ class RogueRooks < Gosu::Window
 
     @npcs = []
     @projectiles = []
+    @crashes = []
 
     # initial attackers
     4.times { spawn_new_npc }
